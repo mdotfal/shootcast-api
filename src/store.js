@@ -72,4 +72,17 @@ const cities = [
   }
 ]
 
-module.exports = { cities, lists }
+const users = [
+  { 
+    "id": "1",
+    "username": "Mike",
+    "password": "pass123"
+  },
+  { 
+    "id": "2",
+    "username": "test",
+    "password": "pass123"
+  },
+];
+
+module.exports = { cities, lists, users }

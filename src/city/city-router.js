@@ -1,72 +1,84 @@
 const express = require( 'express' );
 
+const xss = require( 'xss' );
 const cityRouter = express.Router();
-const bodyParser = express.json();
-const { v4: uuid } = require( 'uuid' );
+const jsonParser = express.json();
 const logger = require( '../logger' );
+const CityService = require('./city-service');
 
-const { cities } = require( '../store' );
+// const { cities } = require( '../store' );
 
 cityRouter
-  .route( '/city' )
-  .get( ( req, res ) => {
-    res.json( cities );
+  .route( '/cities' )
+  .get( ( req, res, next ) => {
+    const knexInstance = req.app.get( 'db' );
+    CityService.getAllCities( knexInstance )
+      .then( cities => {
+        res.json( cities )
+      })
+      .catch( next );
   })
-  .post( bodyParser, ( req, res ) => {
-    const { listId, name } = req.body;
+  .post( jsonParser, ( req, res ) => {
+    const { list_id, name } = req.body;
+    const newCity = { name, list_id };
     if( !name ) {
       logger.error( `Name is required` );
       return res
         .status( 400 )
         .send( `Invalid Name Data` );
     }
-    if( !listId ) {
+    if( !list_id ) {
       logger.error( `listId is required` );
       return res
         .status( 400 )
         .send( `Invalid listId Data` );
     }
-    const id = uuid();
-    const city = {
-      id,
-      name,
-      listId
-    };
-    cities.push( city );
-    logger.info( `City with id ${ id } created`)
-    res
-      .status( 201 )
-      .location( `http://localhost:8000/city/${ id }` )
-      .json({ id });
+    CityService.insertCity(
+      req.app.get( 'db' ),
+      newCity
+    )
+      .then( city => {
+        res
+          .status( 201 )
+          .location( `/cities/${ city.id }` )
+          .json( city )
+      })
+      .catch( next )
   });
 
 cityRouter
-  .route( '/city/:cityId' )
-  .get( ( req, res ) => {
-    const { cityId } = req.params;
-    const city = cities.find( c => c.id == cityId );
-    if( !city ) {
-      logger.error( `City with id ${ cityId } not found` );
-      return res
-        .status( 404 )
-        .send( `City Not Found` );
-    }
-    res.json( city );
+  .route( '/cities/:city_id' )
+  .all( ( req, res, next ) => {
+    CityService.getById(
+      req.app.get( 'db' ),
+      req.params.city_id )
+        .then( city => {
+          if( !city ) {
+            return res.status( 404 ).json({
+              error: { message: `City doesn't exist` }
+            })
+          }
+          res.city = city
+          next()
+        })
+        .catch( next )
   })
-  .delete( ( req, res ) => {
-    const { cityId } = req.params;
-    const cityIndex = cities.findIndex( c => c.id == cityId );
-    if( cityIndex === -1 ) {
-      logger.error( `Card with id ${ cityId } not found` );
-      return res 
-        .status( 404 )
-        .send( `Not found` );
-    }
-    cities.splice( cityIndex, 1 );
-    logger.info( `Card with id ${ cityId } deleted` );
-    res
-      .status( 204 )
-      .end();
-  });
+  .get( ( req, res, next ) => {
+    res.json({
+      id: res.city.id,
+      name: xss( res.city.name ),
+      list_id: res.city.list_id
+    })
+  })
+  .delete( ( req, res, next ) => {
+    CityService.deleteCity(
+      req.app.get( 'db' ),
+      req.params.city_id
+    )
+      .then( () => {
+        res.status( 204 ).end()
+      })
+      .catch( next )
+  })
 
 module.exports = cityRouter;

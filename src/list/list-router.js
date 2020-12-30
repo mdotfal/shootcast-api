@@ -1,65 +1,72 @@
 const express = require( 'express' );
 
+const xss = require( 'xss' );
 const listRouter = express.Router();
-const bodyParser = express.json();
-const { v4: uuid } = require( 'uuid' );
+const jsonParser = express.json();
 const logger = require( '../logger' );
+const ListsService = require( './list-service' );
 
-const { lists } = require( '../store' );
+// const { lists } = require( '../store' );
 
 listRouter
-  .route( '/list' )
-  .get( ( req, res ) => {
-    res.json( lists );
+  .route( '/lists' )
+  .get( ( req, res, next ) => {
+    const knexInstance = req.app.get( 'db' );
+    ListsService.getAllLists( knexInstance )
+      .then( lists => {
+        res.json( lists )
+      })
+      .catch( next );
   })
-  .post( bodyParser, ( req, res ) => {
+  .post( jsonParser, ( req, res, next ) => {
     const { name } = req.body;
-    if( !name ) {
-      logger.error( `Name is required` );
-      return res
-        .status( 400 )
-        .send( `Invalid name data` );
-    }
-    const id = uuid();
-    const list = {
-      id, 
-      name
-    };
-    lists.push( list );
-    logger.info( `List with id ${ id } created` );
-    res
-      .status( 201 )
-      .location( `http://localhost:8000/list/${ id }` )
-      .json( list );
-  });
+    const newList = { name }
+
+    ListsService.insertList(
+      req.app.get( 'db' ),
+      newList
+    )
+      .then( list => {
+        res
+          .status( 201 )
+          .location( `/lists/${ list.id }`)
+          .json( list )
+      })
+      .catch( next )
+  })
 
 listRouter
-  .route( '/list/:listId' )
-  .get( ( req, res ) => {
-    const { listId } = req.params;
-    const list = lists.find( li => li.id == listId );
-    if( !list ) {
-      logger.error( `List with id ${ listId } not found` );
-      return res
-        .status( 404 )
-        .send( `List Not Found` );
-    }
-    res.json( list );
+  .route( '/lists/:list_id' )
+  .all( ( req, res, next ) => {
+    ListsService.getById( 
+      req.app.get( 'db' ), 
+      req.params.list_id )
+      .then( list => {
+        if ( !list ) {
+          return res.status( 404 ).json({
+            error: { message: `List doesn't exist` }
+          })
+        }
+        res.list = list
+        next()
+      })
+      .catch( next )
   })
-  .delete( ( req, res ) => {
-    const { listId } = req.params;
-    const listIndex = lists.findIndex( li => li.id == listId );
-    if( listIndex === -1 ) {
-      logger.error( `List with id ${ listId } not found` );
-      return res
-        .status( 404 )
-        .send( `Not found` );
-    };
-    lists.splice( listIndex, 1 );
-    logger.info( `List with ${ listId } deleted` );
-    res
-      .status( 204 )
-      .end();
-  });
+  .get( ( req, res, next ) => {
+    res.json({
+      id: res.list.id,
+      name: xss( res.list.name )
+    })
+  })
+  .delete( ( req, res, next ) => {
+    ListsService.deleteList(
+      req.app.get( 'db' ),
+      req.params.list_id
+    )
+      .then( () => {
+        res.status( 204 ).end()
+      })
+      .catch( next )
+  })
 
-  module.exports = listRouter;
+module.exports = listRouter;
