@@ -38,8 +38,8 @@ app.use( errorHandler = ( error, req, res, next) => {
 });
 
 // app.use( userRouter );
-app.use( listRouter );
-app.use( cityRouter );
+app.use( '/api', listRouter );
+app.use( '/api', cityRouter );
 
 /***********  GET  ***********/
 

@@ -1,4 +1,5 @@
 const express = require( 'express' );
+const path = require( 'path' );
 
 const xss = require( 'xss' );
 const cityRouter = express.Router();
@@ -40,7 +41,7 @@ cityRouter
       .then( city => {
         res
           .status( 201 )
-          .location( `/cities/${ city.id }` )
+          .location( `${ path.posix.join( req.originalUrl )}/${ city.id }` )
           .json( city )
       })
       .catch( next )

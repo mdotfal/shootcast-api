@@ -1,4 +1,5 @@
 const express = require( 'express' );
+const path = require( 'path' );
 
 const xss = require( 'xss' );
 const listRouter = express.Router();
@@ -29,7 +30,7 @@ listRouter
       .then( list => {
         res
           .status( 201 )
-          .location( `/lists/${ list.id }`)
+          .location( `${ path.posix.join( req.originalUrl )}/${ list.id }`)
           .json( list )
       })
       .catch( next )

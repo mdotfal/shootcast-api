@@ -22,13 +22,13 @@ describe( 'Cities Endpoints' , function() {
 
   afterEach( 'cleanup',() => db.raw( 'TRUNCATE shootcast_cities, shootcast_lists RESTART IDENTITY CASCADE' ))
 
-  describe( `GET /cities`, () => {
+  describe( `GET /api/cities`, () => {
 
     //GIVEN NO CITIES
     context( `Given there are no cities in the database`, () => {
       it( `Given no cities`, () => {
         return supertest( app )
-          .get( '/lists' )
+          .get( '/api/lists' )
           .expect( 200, [] )
       })
     })
@@ -49,22 +49,22 @@ describe( 'Cities Endpoints' , function() {
         })
       })
       
-      it( 'GET /cities responds with 200 and all cities', () => {
+      it( 'GET /api/cities responds with 200 and all cities', () => {
         return supertest( app )
-          .get( '/cities' )
+          .get( '/api/cities' )
           .expect( 200, testCities )
       })
     })
   })
 
-  describe( `GET /cities/:city_id`, () => {
+  describe( `GET /api/cities/:city_id`, () => {
 
     //GIVEN NO CITIES
     context( `Given no cities`, () => {
       it( `responds with 404`, () => {
         const cityId = 123456;
         return supertest( app )
-          .get( `/cities/${ cityId }` )
+          .get( `/api/cities/${ cityId }` )
           .expect( 404, { error: { message: `City doesn't exist` }})
       })
     })
@@ -85,11 +85,11 @@ describe( 'Cities Endpoints' , function() {
         })
       })
 
-      it( `GET /cities/:city_id responds with 200 and the specified city`, () => {
+      it( `GET /api/cities/:city_id responds with 200 and the specified city`, () => {
         const cityId = 2;
         const expectedCity = testCities[ cityId - 1 ];
         return supertest( app )
-          .get( `/cities/${ cityId}` )
+          .get( `/api/cities/${ cityId}` )
       })
     })
 
@@ -116,7 +116,7 @@ describe( 'Cities Endpoints' , function() {
 
       it( 'removes XSS attack content', () => {
         return supertest( app )
-          .get( `/cities/${ maliciousCity.id }` )
+          .get( `/api/cities/${ maliciousCity.id }` )
           .expect( 200 )
           .expect( res => {
             expect( res.body.name ).to.eql( `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.` )
@@ -125,7 +125,7 @@ describe( 'Cities Endpoints' , function() {
     })
   })
 
-  describe( `POST /cities`, () => {
+  describe( `POST /api/cities`, () => {
 
     let testLists = makeListsArray();
 
@@ -141,29 +141,29 @@ describe( 'Cities Endpoints' , function() {
         list_id: 1,
       }
       return supertest( app )
-        .post( '/cities' )
+        .post( '/api/cities' )
         .send( newCity )
         .expect( 201 )
         .expect( res => {
           expect( res.body.name ).to.eql( newCity.name )
           expect( res.body.list_id ).to.eql( newCity.list_id )
-          expect( res.headers.location ).to.eql( `/cities/${ res.body.id }` )
+          expect( res.headers.location ).to.eql( `/api/cities/${ res.body.id }` )
         })
         .then( postRes => {
           supertest( app )
-            .get( `/cities/${ postRes.body.id }`)
+            .get( `/api/cities/${ postRes.body.id }`)
             .expect( postRes.body )
         })
     })
   })
 
-  describe( `DELETE /cities/:city_id`, () => {
+  describe( `DELETE /api/cities/:city_id`, () => {
     //GIVEN NO CITIES
     context( `Given no cities`, () => {
       it( `responds with 404`, () => {
         const cityId = 123456;
         return supertest( app )
-          .delete( `/cities/${ cityId }` )
+          .delete( `/api/cities/${ cityId }` )
           .expect( 404, {
             error: {
               message: `City doesn't exist`
@@ -192,11 +192,11 @@ describe( 'Cities Endpoints' , function() {
         const idToRemove = 2;
         const expectedCities = testCities.filter( city => city.id !== idToRemove )
         return supertest( app )
-          .delete( `/cities/${ idToRemove }` )
+          .delete( `/api/cities/${ idToRemove }` )
           .expect( 204 )
           .then( res => {
             supertest( app )
-              .get( '/cities' )
+              .get( '/api/cities' )
               .expect( expectedCities )
           })
       })

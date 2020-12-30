@@ -21,12 +21,12 @@ describe( 'Lists Endpoints', function() {
 
   afterEach( 'cleanup',() => db.raw( 'TRUNCATE shootcast_cities, shootcast_lists RESTART IDENTITY CASCADE' ))
 
-  describe( `GET /lists`, () => {
+  describe( `GET /api/lists`, () => {
     // GIVEN NO LISTS
     context( 'Given there are no lists in the database', () => {
       it( `Given no lists`, () => {
         return supertest( app )
-          .get( '/lists' )
+          .get( '/api/lists' )
           .expect( 200, [] )
       })
     })
@@ -41,22 +41,22 @@ describe( 'Lists Endpoints', function() {
           .insert( testLists )
       })
 
-      it( 'GET /lists responds with 200 and all lists', () => {
+      it( 'GET /api/lists responds with 200 and all lists', () => {
         return supertest( app )
-          .get( '/lists' )
+          .get( '/api/lists' )
           .expect( 200, testLists )
       })
     })
   })
 
-  describe( `GET /lists/:list_id`, () => {
+  describe( `GET /api/lists/:list_id`, () => {
 
     // GIVEN NO LISTS
     context( `Given no lists`, () => {
       it( `responds with 404`, () => {
         const listId = 123456
         return supertest( app )
-          .get( `/lists/${ listId }`)
+          .get( `/api/lists/${ listId }`)
           .expect( 404, { error: { message: `List doesn't exist` }})
       })
     })
@@ -71,11 +71,11 @@ describe( 'Lists Endpoints', function() {
           .insert( testLists )
       })
   
-      it( 'GET /lists/:list_id responds with 200 and the specified list', () => {
+      it( 'GET /api/lists/:list_id responds with 200 and the specified list', () => {
         const listId = 2;
         const expectedList = testLists[ listId - 1 ];
         return supertest( app )
-          .get( `/lists/${ listId }` )
+          .get( `/api/lists/${ listId }` )
           .expect( 200, expectedList )
       })
     })
@@ -94,7 +94,7 @@ describe( 'Lists Endpoints', function() {
 
       it( 'removes XSS attack content', () => {
         return supertest( app )
-          .get( `/lists/${ maliciousList.id }` )
+          .get( `/api/lists/${ maliciousList.id }` )
           .expect( 200 )
           .expect( res => {
             expect( res.body.name ).to.eql( `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.` )
@@ -103,34 +103,34 @@ describe( 'Lists Endpoints', function() {
     })
   })
 
-  describe( `POST /lists`, () => {
+  describe( `POST /api/lists`, () => {
     it( `creates an lists, responding with 201 and the new list`, () => {
       const newList = {
         name: 'Test new list'
       }
       return supertest( app )
-        .post( '/lists' )
+        .post( '/api/lists' )
         .send( newList )
         .expect( 201 )
         .expect( res => {
           expect( res.body.name ).to.eql( newList.name )
           expect( res.body ).to.have.property( 'id' )
-          expect( res.headers.location ).to.eql( `/lists/${ res.body.id }` )
+          expect( res.headers.location ).to.eql( `/api/lists/${ res.body.id }` )
         })
         .then( postRes => {
           supertest( app )
-            .get( `/lists/${ postRes.body.id }` )
+            .get( `/api/lists/${ postRes.body.id }` )
             .expect( postRes.body )
         })
     })
   })
 
-  describe( `DELETE /lists/:list_id`, () => {
+  describe( `DELETE /api/lists/:list_id`, () => {
     context( 'Given no lists', () => {
       it( `responds with 404`, () => {
         const listId = 123456
         return supertest( app )
-          .delete( `/lists/${ listId }` )
+          .delete( `/api/lists/${ listId }` )
           .expect( 404, {
             error: { message: `List doesn't exist` }
           })
@@ -150,11 +150,11 @@ describe( 'Lists Endpoints', function() {
         const idToRemove = 2;
         const expectedLists = testLists.filter( list => list.id !== idToRemove )
         return supertest( app )
-          .delete( `/lists/${ idToRemove }` )
+          .delete( `/api/lists/${ idToRemove }` )
           .expect( 204 )
           .then( res => {
             supertest( app )
-              .get( `/lists` )
+              .get( `/api/lists` )
               .expect( expectedLists )
           })
       })
