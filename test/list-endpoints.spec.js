@@ -5,7 +5,7 @@ const app = require( '../src/app' );
 const { makeListsArray } = require( './lists.fixtures' );
 
 describe( 'Lists Endpoints', function() {
-  let db
+  let db;
 
   before( 'make knex instance', () => {
     db = knex({
@@ -17,9 +17,9 @@ describe( 'Lists Endpoints', function() {
 
   after( 'disconnect from db', () => db.destroy() );
 
-  before( 'clean the table', () => db( 'shootcast_lists' ).truncate());
+  before( 'clean the table', () => db.raw( 'TRUNCATE shootcast_cities, shootcast_lists RESTART IDENTITY CASCADE' ))
 
-  afterEach( 'cleanup', () => db( 'shootcast_lists' ).truncate())
+  afterEach( 'cleanup',() => db.raw( 'TRUNCATE shootcast_cities, shootcast_lists RESTART IDENTITY CASCADE' ))
 
   describe( `GET /lists`, () => {
     // GIVEN NO LISTS
@@ -50,6 +50,7 @@ describe( 'Lists Endpoints', function() {
   })
 
   describe( `GET /lists/:list_id`, () => {
+
     // GIVEN NO LISTS
     context( `Given no lists`, () => {
       it( `responds with 404`, () => {

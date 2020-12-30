@@ -18,7 +18,7 @@ cityRouter
       })
       .catch( next );
   })
-  .post( jsonParser, ( req, res ) => {
+  .post( jsonParser, ( req, res, next ) => {
     const { list_id, name } = req.body;
     const newCity = { name, list_id };
     if( !name ) {

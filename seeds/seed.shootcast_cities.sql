@@ -1,3 +1,5 @@
+TRUNCATE shootcast_cities RESTART IDENTITY CASCADE;
+
 INSERT INTO shootcast_cities ( name, list_id )
 VALUES
   ( 'San Francisco', 1 ),
