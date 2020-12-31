@@ -1,17 +1,16 @@
 require( 'dotenv').config();
 const express = require( 'express' );
 const morgan = require( 'morgan' );
-const cors = require( 'cors' );
 const helmet = require( 'helmet' );
-const { NODE_ENV, CLIENT_ORIGIN } = require( './config');
+const cors = require( 'cors' );
+const { NODE_ENV } = require( './config');
 const listRouter = require( './list/list-router' );
 const ListsService = require( './list/list-service' );
 const cityRouter = require( './city/city-router' ); 
-// const userRouter = require( './user/user-router' );
 const logger = require( './logger' );
 
 const app = express();
-// const jsonParser = express.json();
+
 
 const morganOption = ( NODE_ENV === 'production' )
   ? 'tiny'
@@ -19,11 +18,7 @@ const morganOption = ( NODE_ENV === 'production' )
 
 app.use( morgan( morganOption ));
 app.use( helmet() );
-app.use( 
-  cors({
-    origin: CLIENT_ORIGIN
-  })
-);
+app.use( cors() );
 app.use( express.json() );
 
 app.use( errorHandler = ( error, req, res, next) => {
@@ -37,7 +32,6 @@ app.use( errorHandler = ( error, req, res, next) => {
   res.status( 500 ).json( response );
 });
 
-// app.use( userRouter );
 app.use( '/api', listRouter );
 app.use( '/api', cityRouter );
 
@@ -51,19 +45,5 @@ app.get( '/xss', ( req, res ) => {
   res.cookie( 'secretToken', '1234567890' );
   res.sendFile( __dirname + '/xss-example.html' );
 });
-
-/***********  POST  ***********/
-
-// app.use( function validateBearerToken( req, res, next ) {
-//   const apiToken = process.env.API_TOKEN;
-//   const authToken = req.get( 'Authorization' );
-
-//   if ( !authToken || authToken.split(' ')[ 1 ] !== apiToken ) {
-//     logger.error(`Unauthorized request to path: ${req.path}`);
-//     return res.status( 401 ).json({ error: 'Unauthorized request' });
-//   }
-//   // move to the next middleware
-//   next();
-// })
 
 module.exports = app;
