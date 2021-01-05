@@ -7,8 +7,6 @@ const jsonParser = express.json();
 const logger = require( '../logger' );
 const ListsService = require( './list-service' );
 
-// const { lists } = require( '../store' );
-
 listRouter
   .route( '/lists' )
   .get( ( req, res, next ) => {

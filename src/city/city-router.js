@@ -7,8 +7,6 @@ const jsonParser = express.json();
 const logger = require( '../logger' );
 const CityService = require('./city-service');
 
-// const { cities } = require( '../store' );
-
 cityRouter
   .route( '/cities' )
   .get( ( req, res, next ) => {
