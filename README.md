@@ -6,14 +6,72 @@
 
 [ Base URL: https://shootcast-app.vercel.app/]
 
-GET /api/lists  
-GET /api/cities
+Get request for the list of lists
+>GET /api/lists  
 
-POST /api/lists  
-POST /api/cities
+Method:&nbsp;&nbsp;`GET`  
+Code:&nbsp;&nbsp;`200 OK`  
+Content example:  
+>{  
+&nbsp;&nbsp;&nbsp;&nbsp;"id": "1",  
+&nbsp;&nbsp;&nbsp;&nbsp;"name": "Custom List"  
+>}
+<hr>  
 
-DELETE /api/lists/:`id`  
-DELETE /api/cities/:`id`
+>GET /api/cities  
+
+Method:&nbsp;&nbsp;`GET`  
+Code:&nbsp;&nbsp;`200 OK`  
+Content example: 
+>{  
+&nbsp;&nbsp;&nbsp;&nbsp;"id": "1",    
+&nbsp;&nbsp;&nbsp;&nbsp;"name": "San Francsico"  
+&nbsp;&nbsp;&nbsp;&nbsp;"list_id": "1"  
+>}
+<hr>  
+
+POST request to create a new list item.
+>POST /api/lists  
+
+Method:&nbsp;&nbsp;`POST`  
+Code: `201 CREATED`  
+Content Example:  
+Provide name of list.  ID will be created in database.  Submitted as JSON data.
+>{  
+&nbsp;&nbsp;"name": "New Custom List"  
+>}  
+
+
+<hr>  
+
+>POST /api/cities  
+
+Method:&nbsp;&nbsp;`POST`  
+Code: `201 CREATED`  
+Content Example:  
+Provide name of city.  ID will be created in database.  "list_id" must be selected from dropdown options.  Submitted as JSON data.
+>{  
+&nbsp;&nbsp;"name": "Castro Valley",  
+&nbsp;&nbsp;"list_id": "1"  
+>} 
+<hr>  
+
+
+>DELETE /api/lists/:`id`  
+  
+Method: `DELETE`  
+Code: `204 NO CONTENT`  
+Content: {}   
+Deletes List item at `id`
+<hr>  
+
+>DELETE /api/cities/:`id`  
+  
+Method: `DELETE`  
+Code: `204 NO CONTENT`  
+Content: {}  
+Deletes List item at `id`
+<hr>  
 
 #### Technologies Used:  PostgreSQL, Express, ReactJS. Node.js, JavaScript, Fetch API, HTML, CSS
 

@@ -14,10 +14,6 @@ describe( `Lists service object`, function() {
     })
   }) 
 
-  // before( () => db( 'shootcast_lists' ).truncate() )
-
-  // afterEach( () => db( 'shootcast_lists' ).truncate() )
-
   before( 'clean the table', () => db.raw( 'TRUNCATE shootcast_cities, shootcast_lists RESTART IDENTITY CASCADE' ))
 
   afterEach( 'cleanup',() => db.raw( 'TRUNCATE shootcast_cities, shootcast_lists RESTART IDENTITY CASCADE' ))
